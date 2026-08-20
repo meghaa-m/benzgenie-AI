@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
-  TrendingUp, TrendingDown, DollarSign, HeartPulse, Sparkles, 
+  TrendingUp, TrendingDown, HeartPulse, Sparkles, 
   ArrowUpRight, AlertCircle, Calendar, Plus, MessageSquare, 
-  FileSpreadsheet, FileText, CheckCircle2, ChevronRight, UserPlus 
+  FileSpreadsheet, FileText, CheckCircle2, ChevronRight, UserPlus
 } from 'lucide-react';
 import { store } from '../lib/store';
 import { Transaction, BusinessHealth, AppNotification, CalendarEvent } from '../types';
+import { formatINR, CURRENCY_SYMBOL } from '../lib/utils';
 
 interface DashboardProps {
   setActiveTab: (tab: string) => void;
@@ -45,7 +46,7 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
   const handleRecommendationAction = (rec: any) => {
     if (onQuickMessage) {
       if (rec.id === 'rec-2') {
-        onQuickMessage(`Algonquin Agency's payment of $3,200 is overdue. Draft a high-impact, polite but firm, collection notice reminder email.`);
+        onQuickMessage(`Algonquin Agency's payment of ₹32,000 is overdue. Draft a high-impact, polite but firm, collection notice reminder email.`);
       } else if (rec.id === 'rec-1') {
         onQuickMessage(`Provide a specialized breakdown of operational expense reduction strategies for my AWS cloud infrastructure spending which is increasing at 12% MoM.`);
       } else {
@@ -63,67 +64,70 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
       className="space-y-6"
     >
       {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-6 rounded-2xl border border-slate-800/60">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-4 sm:p-6 rounded-2xl border border-slate-800/60">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono bg-violet-500/20 text-violet-300 py-1 px-2.5 rounded-full border border-violet-500/30 font-medium">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-[10px] sm:text-xs font-mono bg-violet-500/20 text-violet-300 py-0.5 sm:py-1 px-2 sm:px-2.5 rounded-full border border-violet-500/30 font-medium">
               Console v1.4
             </span>
-            <span className="text-xs font-mono bg-emerald-500/20 text-emerald-300 py-1 px-2.5 rounded-full border border-emerald-500/30 font-medium flex items-center gap-1">
+            <span className="text-[10px] sm:text-xs font-mono bg-emerald-500/20 text-emerald-300 py-0.5 sm:py-1 px-2 sm:px-2.5 rounded-full border border-emerald-500/30 font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
               PRO ACTIVE
             </span>
+            <span className="text-[10px] sm:text-xs font-mono bg-amber-500/20 text-amber-300 py-0.5 sm:py-1 px-2 sm:px-2.5 rounded-full border border-amber-500/30 font-medium">
+              INR (₹)
+            </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-white mt-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white mt-2">
             Welcome back, {profile.name}
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-slate-400 text-xs sm:text-sm mt-1">
             Real-time insights for <strong className="text-slate-200">{profile.companyName}</strong> ({profile.industry})
           </p>
         </div>
         
         {/* Quick Action bar */}
-        <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-wrap gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button 
             id="quick-act-invoice"
             onClick={() => setActiveTab('finance')}
-            className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-violet-950/40 transition-all cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs px-3.5 sm:px-4 py-2.5 rounded-xl shadow-lg shadow-violet-950/40 transition-all cursor-pointer min-h-[42px]"
           >
             <Plus className="w-4 h-4" />
-            Create Invoice
+            <span>Create Invoice</span>
           </button>
           <button 
             id="quick-act-crm"
             onClick={() => setActiveTab('sales')}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-all cursor-pointer"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs px-3.5 sm:px-4 py-2.5 rounded-xl border border-slate-700 transition-all cursor-pointer min-h-[42px]"
           >
             <UserPlus className="w-4 h-4 text-violet-400" />
-            Add Lead
+            <span>Add Lead</span>
           </button>
           <button 
             id="quick-act-document"
             onClick={() => setActiveTab('documents')}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs px-3.5 sm:px-4 py-2.5 rounded-xl border border-slate-700 transition-all cursor-pointer min-h-[42px]"
           >
             <FileText className="w-4 h-4 text-emerald-400" />
-            Ingest Document
+            <span>Ingest Document</span>
           </button>
         </div>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Cash balance */}
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+        <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Net Operating Profit</span>
-            <div className="p-2 bg-violet-500/10 text-violet-400 rounded-xl border border-violet-500/20">
-              <DollarSign className="w-4 h-4" />
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-400">Net Operating Profit</span>
+            <div className="p-2 bg-violet-500/10 text-violet-400 rounded-xl border border-violet-500/20 font-bold text-sm font-display">
+              ₹
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-display font-bold text-white">
-              ${netBalance.toLocaleString()}
+          <div className="mt-3 sm:mt-4">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white">
+              ₹{netBalance.toLocaleString('en-IN')}
             </h3>
             <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium mt-1">
               <TrendingUp className="w-3.5 h-3.5" />
@@ -133,54 +137,54 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
         </div>
 
         {/* Total Inflow */}
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+        <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Total Income</span>
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-400">Total Income</span>
             <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-display font-bold text-white">
-              ${totalIncome.toLocaleString()}
+          <div className="mt-3 sm:mt-4">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white">
+              ₹{totalIncome.toLocaleString('en-IN')}
             </h3>
-            <span className="text-xs text-slate-400 block mt-1">
-              Accumulated revenue (Consulting + SaaS)
+            <span className="text-[11px] sm:text-xs text-slate-400 block mt-1">
+              Accumulated revenue
             </span>
           </div>
         </div>
 
         {/* Total Outflow */}
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+        <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Operating Expenses</span>
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-400">Operating Expenses</span>
             <div className="p-2 bg-rose-500/10 text-rose-400 rounded-xl border border-rose-500/20">
               <TrendingDown className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-display font-bold text-white">
-              ${totalExpense.toLocaleString()}
+          <div className="mt-3 sm:mt-4">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white">
+              ₹{totalExpense.toLocaleString('en-IN')}
             </h3>
-            <span className="text-xs text-slate-400 block mt-1">
-              AWS bills, contractor payouts, facilities
+            <span className="text-[11px] sm:text-xs text-slate-400 block mt-1">
+              AWS bills, contractor payouts
             </span>
           </div>
         </div>
 
         {/* Profit margin */}
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+        <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Net Profit Margin</span>
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-400">Net Profit Margin</span>
             <div className="p-2 bg-fuchsia-500/10 text-fuchsia-400 rounded-xl border border-fuchsia-500/20">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-display font-bold text-white">
+          <div className="mt-3 sm:mt-4">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white">
               {netMargin}%
             </h3>
-            <span className="text-xs text-emerald-400 block mt-1 font-medium">
+            <span className="text-[11px] sm:text-xs text-emerald-400 block mt-1 font-medium">
               Exceptional efficiency tier
             </span>
           </div>
@@ -340,23 +344,48 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
       </div>
 
       {/* Bottom Section: Recent transactions */}
-      <div className="bg-slate-900/60 p-6 rounded-2xl border border-slate-800/80">
+      <div className="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-slate-800/80">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-base font-display font-semibold text-white">Recent Transactions</h2>
-            <p className="text-xs text-slate-400">Cash Flow Activity ledger (last 5 operations)</p>
+            <h2 className="text-sm sm:text-base font-display font-semibold text-white">Recent Transactions</h2>
+            <p className="text-[11px] sm:text-xs text-slate-400">Cash Flow Activity ledger (last 5 operations)</p>
           </div>
           <button 
             id="btn-dashboard-view-all-tx"
             onClick={() => setActiveTab('finance')}
-            className="text-xs text-violet-400 font-semibold hover:text-violet-300 flex items-center gap-1 cursor-pointer"
+            className="text-xs text-violet-400 font-semibold hover:text-violet-300 flex items-center gap-1 cursor-pointer p-1"
           >
-            Ledger Manager
+            <span>Ledger</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile Card List for small screens (< sm) */}
+        <div className="space-y-2.5 sm:hidden">
+          {transactions.slice(0, 5).map((tx) => (
+            <div key={tx.id} className="p-3 bg-slate-950/50 rounded-xl border border-slate-800/60 flex items-center justify-between">
+              <div className="overflow-hidden pr-2">
+                <h4 className="text-xs font-semibold text-white truncate">{tx.description}</h4>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-mono text-slate-400">{tx.date}</span>
+                  <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold ${
+                    tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                  }`}>
+                    {tx.category}
+                  </span>
+                </div>
+              </div>
+              <div className={`text-xs font-display font-bold shrink-0 ${
+                tx.type === 'income' ? 'text-emerald-400' : 'text-slate-100'
+              }`}>
+                {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Table for Tablet & Desktop */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-800 text-[10px] font-mono text-slate-500 uppercase tracking-wider">
@@ -370,7 +399,7 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
             <tbody className="divide-y divide-slate-800/50 text-xs">
               {transactions.slice(0, 5).map((tx) => (
                 <tr key={tx.id} className="text-slate-300 hover:bg-slate-900/20 transition-all">
-                  <td className="py-3 font-mono text-slate-400">{tx.date}</td>
+                  <td className="py-3 font-mono text-slate-400 whitespace-nowrap">{tx.date}</td>
                   <td className="py-3 font-semibold text-white">{tx.description}</td>
                   <td className="py-3 text-slate-400">{tx.category}</td>
                   <td className="py-3">
@@ -381,10 +410,10 @@ export default function Dashboard({ setActiveTab, onQuickMessage }: DashboardPro
                       {tx.type === 'income' ? 'INFLOW' : 'OUTFLOW'}
                     </span>
                   </td>
-                  <td className={`py-3 text-right font-display font-bold ${
+                  <td className={`py-3 text-right font-display font-bold whitespace-nowrap ${
                     tx.type === 'income' ? 'text-emerald-400' : 'text-slate-100'
                   }`}>
-                    {tx.type === 'income' ? '+' : '-'}${tx.amount.toLocaleString()}
+                    {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
                   </td>
                 </tr>
               ))}

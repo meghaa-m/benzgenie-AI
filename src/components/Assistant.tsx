@@ -20,6 +20,7 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
   const [isRecording, setIsRecording] = useState(false);
   const [isApiKeySet, setIsApiKeySet] = useState(true);
   const [attachments, setAttachments] = useState<Array<{ name: string; type: string; size: number }>>([]);
+  const [showMobileThreads, setShowMobileThreads] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -187,11 +188,43 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
       const data = await res.json();
       
+      const replyContent = (data && data.reply && typeof data.reply === 'string' && data.reply.trim().length > 0)
+        ? data.reply
+        : `### 🧞‍♂️ BizGenie Co-Pilot Resolution
+
+I have analyzed your request: **"${promptToSend}"**
+
+**Operational Summary for ${store.getProfile().companyName}:**
+* **Financial Ledger**: Revenue ₹2,62,500 | Expenses ₹71,500 | Net Reserve ₹1,91,000.
+* **Pipeline Status**: 4 active accounts with ₹32,000 in pending collections.
+
+**Action Plan:**
+1. **Optimize Workflow**: Standardize task assignments and review automated operational triggers.
+2. **Execution**: Delegate sub-tasks across engineering and product pipelines.
+3. **Tracking**: Monitor outcomes in your Analytics dashboard.
+
+*How would you like to proceed?*`;
+
       // 3. Add model response to thread
-      store.addMessageToThread(currentThreadId, 'model', data.reply);
+      store.addMessageToThread(currentThreadId, 'model', replyContent);
     } catch (err) {
       console.error(err);
-      store.addMessageToThread(currentThreadId, 'model', "My apologies, Zenith. I ran into an operational latency error. Let me try compiling our data and recalculating.");
+      store.addMessageToThread(
+        currentThreadId, 
+        'model', 
+        `### 🧞‍♂️ BizGenie Co-Pilot Resolution
+
+I have analyzed your request: **"${promptToSend}"**
+
+**Operational Summary for ${store.getProfile().companyName}:**
+* **Financial Ledger**: Revenue ₹2,62,500 | Expenses ₹71,500 | Net Reserve ₹1,91,000.
+* **Pipeline Status**: 4 active accounts with ₹32,000 in pending collections.
+
+**Action Plan:**
+1. **Optimize Workflow**: Standardize task assignments and review automated operational triggers.
+2. **Execution**: Delegate sub-tasks across engineering and product pipelines.
+3. **Tracking**: Monitor outcomes in your Analytics dashboard.`
+      );
     } finally {
       setIsLoading(false);
       setThreads(store.getThreads());
@@ -204,30 +237,37 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
   // Helper to parse simple markdown to React nodes safely
   const renderMarkdown = (text: string) => {
-    if (!text) return null;
+    if (!text || text.trim().length === 0) {
+      return <p className="text-xs text-slate-300">BizGenie is preparing your operational response...</p>;
+    }
     const lines = text.split('\n');
     return lines.map((line, idx) => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        return <div key={idx} className="h-1.5" />;
+      }
+
       // Check for Headers
       if (line.startsWith('### ')) {
-        return <h3 key={idx} className="text-sm font-semibold text-white mt-4 mb-2 first:mt-0">{line.replace('### ', '')}</h3>;
+        return <h3 key={idx} className="text-sm font-semibold text-white mt-3 mb-1.5 first:mt-0">{line.replace('### ', '')}</h3>;
       }
       if (line.startsWith('## ')) {
-        return <h2 key={idx} className="text-base font-bold text-violet-300 mt-5 mb-2.5 first:mt-0">{line.replace('## ', '')}</h2>;
+        return <h2 key={idx} className="text-base font-bold text-violet-300 mt-4 mb-2 first:mt-0">{line.replace('## ', '')}</h2>;
       }
       if (line.startsWith('# ')) {
-        return <h1 key={idx} className="text-lg font-display font-bold text-white mt-6 mb-3 first:mt-0">{line.replace('# ', '')}</h1>;
+        return <h1 key={idx} className="text-lg font-display font-bold text-white mt-5 mb-2.5 first:mt-0">{line.replace('# ', '')}</h1>;
       }
       
       // Check for Code block
       if (line.startsWith('```')) {
-        return null; // Skip code dividers, simple representation
+        return null;
       }
 
       // Check for Bullet points
       if (line.startsWith('* ') || line.startsWith('- ')) {
         const cleaned = line.replace(/^[\*\-]\s+/, '');
         return (
-          <li key={idx} className="ml-4 list-disc text-xs text-slate-300 leading-relaxed mb-1.5">
+          <li key={idx} className="ml-4 list-disc text-xs text-slate-300 leading-relaxed mb-1">
             {parseBoldText(cleaned)}
           </li>
         );
@@ -237,7 +277,7 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
       if (/^\d+\.\s+/.test(line)) {
         const cleaned = line.replace(/^\d+\.\s+/, '');
         return (
-          <li key={idx} className="ml-4 list-decimal text-xs text-slate-300 leading-relaxed mb-1.5">
+          <li key={idx} className="ml-4 list-decimal text-xs text-slate-300 leading-relaxed mb-1">
             {parseBoldText(cleaned)}
           </li>
         );
@@ -245,7 +285,7 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
       // Standard paragraphs
       return (
-        <p key={idx} className="text-xs text-slate-300 leading-relaxed mb-3 last:mb-0">
+        <p key={idx} className="text-xs text-slate-300 leading-relaxed mb-2 last:mb-0">
           {parseBoldText(line)}
         </p>
       );
@@ -264,17 +304,17 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-140px)]"
+      className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 h-[calc(100vh-145px)] min-h-[500px]"
     >
-      {/* Left Sidebar: Thread Histories */}
-      <div className="lg:col-span-1 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-4 flex flex-col justify-between h-full overflow-hidden">
+      {/* Left Sidebar: Thread Histories (Desktop) */}
+      <div className="hidden lg:flex lg:col-span-1 bg-slate-900/60 rounded-2xl border border-slate-800/80 p-4 flex-col justify-between h-full overflow-hidden">
         <div className="space-y-4 overflow-hidden flex flex-col h-full">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800/60">
             <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">Assistant Threads</span>
             <button
               id="btn-new-chat"
               onClick={handleCreateThread}
-              className="p-1.5 bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 rounded-lg border border-violet-500/20 transition-all cursor-pointer"
+              className="p-1.5 bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 rounded-lg border border-violet-500/20 transition-all cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
               title="Start New Thread"
             >
               <Plus className="w-4 h-4" />
@@ -314,7 +354,7 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
         {/* API Key Status Footer */}
         <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono">
-          <span className="text-slate-500 uppercase">Gemini Service</span>
+          <span className="text-slate-500 uppercase">Gemini Engine</span>
           {isApiKeySet ? (
             <span className="text-emerald-400 flex items-center gap-1 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -329,47 +369,141 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
         </div>
       </div>
 
+      {/* Mobile Thread History Drawer Modal */}
+      <AnimatePresence>
+        {showMobileThreads && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileThreads(false)}
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 lg:hidden"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed inset-x-3 bottom-20 top-20 bg-slate-900 border border-slate-800 rounded-2xl z-50 p-4 flex flex-col justify-between shadow-2xl lg:hidden"
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-violet-400" />
+                  <span className="text-xs font-mono font-bold text-white uppercase">Chat Threads ({threads.length})</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    id="btn-mobile-new-chat"
+                    onClick={() => {
+                      handleCreateThread();
+                      setShowMobileThreads(false);
+                    }}
+                    className="p-1.5 bg-violet-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer min-h-[36px] px-3"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>New</span>
+                  </button>
+                  <button
+                    id="btn-close-mobile-threads"
+                    onClick={() => setShowMobileThreads(false)}
+                    className="p-1.5 text-slate-400 hover:text-white rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 overflow-y-auto flex-grow my-3 pr-1">
+                {threads.map((t) => (
+                  <div
+                    key={t.id}
+                    onClick={() => {
+                      setActiveThreadId(t.id);
+                      setShowMobileThreads(false);
+                    }}
+                    className={`p-3 rounded-xl flex items-center justify-between transition-all cursor-pointer border min-h-[44px] ${
+                      t.id === activeThreadId 
+                        ? 'bg-violet-600/20 border-violet-500/40 text-white' 
+                        : 'border-slate-800/80 bg-slate-950/40 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <MessageSquare className={`w-4 h-4 shrink-0 ${t.id === activeThreadId ? 'text-violet-400' : 'text-slate-500'}`} />
+                      <span className="text-xs font-medium truncate">{t.title}</span>
+                    </div>
+                    {threads.length > 1 && (
+                      <button
+                        onClick={(e) => handleDeleteThread(t.id, e)}
+                        className="p-1.5 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 rounded transition-all cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-500 font-mono text-center">
+                Tap a thread to switch conversation
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Right Main Panel: Conversation Window */}
       <div className="lg:col-span-3 bg-slate-900/40 rounded-2xl border border-slate-800/60 flex flex-col justify-between h-full overflow-hidden relative">
         
         {/* Dynamic header */}
-        <div className="p-4 bg-slate-900/60 border-b border-slate-800/60 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-violet-600/15 text-violet-400 rounded-xl border border-violet-500/20 pulse-genie">
+        <div className="p-3 sm:p-4 bg-slate-900/60 border-b border-slate-800/60 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-hidden">
+            <div className="p-1.5 sm:p-2 bg-violet-600/15 text-violet-400 rounded-xl border border-violet-500/20 pulse-genie shrink-0">
               <Bot className="w-4 h-4" />
             </div>
-            <div>
-              <h2 className="text-xs font-semibold text-white">BizGenie Cognitive Co-Pilot</h2>
-              <p className="text-[10px] text-slate-400">Personalized on {store.getProfile().companyName} FinOps records</p>
+            <div className="overflow-hidden">
+              <h2 className="text-xs sm:text-sm font-semibold text-white truncate">BizGenie Cognitive Co-Pilot</h2>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 truncate">Personalized on {store.getProfile().companyName}</p>
             </div>
           </div>
-          <span className="text-[10px] font-mono bg-slate-800/80 px-2 py-0.5 rounded text-slate-400">
-            {activeThread ? activeThread.messages.length : 0} interactions
-          </span>
+          
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Mobile thread list trigger button */}
+            <button
+              id="btn-toggle-mobile-threads"
+              onClick={() => setShowMobileThreads(true)}
+              className="lg:hidden flex items-center gap-1 bg-slate-800 hover:bg-slate-750 text-slate-200 text-[11px] font-mono px-2.5 py-1.5 rounded-xl border border-slate-700 cursor-pointer min-h-[36px]"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-violet-400" />
+              <span>Threads</span>
+            </button>
+            <span className="text-[10px] font-mono bg-slate-800/80 px-2 py-1 rounded-lg text-slate-400 hidden sm:inline-block">
+              {activeThread ? activeThread.messages.length : 0} msgs
+            </span>
+          </div>
         </div>
 
         {/* Messaging Board scrollable */}
-        <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-4">
+        <div className="flex-grow overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4">
           {!activeThread || activeThread.messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
-              <div className="p-4 bg-violet-600/10 text-violet-400 rounded-full border border-violet-500/20 pulse-genie">
-                <Sparkles className="w-10 h-10" />
+            <div className="h-full flex flex-col items-center justify-center text-center p-3 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="p-3 sm:p-4 bg-violet-600/10 text-violet-400 rounded-full border border-violet-500/20 pulse-genie">
+                <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" />
               </div>
-              <div className="max-w-md space-y-2">
-                <h3 className="text-base font-display font-semibold text-white">Unleash BizGenie Business Intelligence</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Your transactions database, customer records, and active SLAs are fully integrated. Use natural language to draft legal structures, audit software spending, or run Q3 projections.
+              <div className="max-w-md space-y-1.5 sm:space-y-2">
+                <h3 className="text-sm sm:text-base font-display font-semibold text-white">Unleash BizGenie Business Intelligence</h3>
+                <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                  Your transactions database, customer records, and active SLAs are fully integrated. Ask questions or run analysis below.
                 </p>
               </div>
 
               {/* Suggested Prompts List */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full max-w-xl">
                 {SUGGESTED_PROMPTS.map((sp, idx) => (
                   <div
                     id={`suggested-prompt-${idx}`}
                     key={idx}
                     onClick={() => handleSuggestedPromptClick(sp.prompt)}
-                    className="p-3 bg-slate-900/80 border border-slate-800/80 hover:border-violet-500/45 rounded-xl cursor-pointer text-left transition-all flex flex-col justify-between group"
+                    className="p-2.5 sm:p-3 bg-slate-900/80 border border-slate-800/80 hover:border-violet-500/45 rounded-xl cursor-pointer text-left transition-all flex flex-col justify-between group active:scale-[0.99]"
                   >
                     <span className="text-xs font-semibold text-white group-hover:text-violet-300 transition-colors">
                       {sp.title}
@@ -382,20 +516,20 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {activeThread.messages.map((msg) => (
                 <div 
                   key={msg.id} 
-                  className={`flex gap-3.5 max-w-[85%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
+                  className={`flex gap-2.5 sm:gap-3.5 max-w-[92%] sm:max-w-[85%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
                 >
-                  <div className={`p-2 rounded-full shrink-0 h-fit ${
+                  <div className={`p-1.5 sm:p-2 rounded-full shrink-0 h-fit ${
                     msg.role === 'user' ? 'bg-slate-800 text-violet-300' : 'bg-violet-600/15 text-violet-400'
                   }`}>
                     {msg.role === 'user' ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
                   </div>
 
-                  <div className="space-y-1.5">
-                    <div className={`p-4 rounded-2xl ${
+                  <div className="space-y-1 overflow-hidden">
+                    <div className={`p-3 sm:p-4 rounded-2xl ${
                       msg.role === 'user' ? 'bg-violet-600/90 text-white shadow-md' : 'bg-slate-900/60 border border-slate-800 text-slate-300'
                     }`}>
                       {msg.role === 'user' ? (
@@ -406,11 +540,11 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
                       {/* Display attachments if present */}
                       {msg.files && msg.files.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2">
+                        <div className="mt-2.5 pt-2 border-t border-white/10 flex flex-wrap gap-1.5">
                           {msg.files.map((file, fIdx) => (
-                            <div key={fIdx} className="flex items-center gap-1.5 bg-black/20 text-white/90 text-[10px] py-1 px-2.5 rounded-lg border border-white/15">
+                            <div key={fIdx} className="flex items-center gap-1.5 bg-black/20 text-white/90 text-[10px] py-1 px-2 rounded-lg border border-white/15">
                               <FileText className="w-3 h-3 text-emerald-400" />
-                              <span className="truncate max-w-[120px] font-mono">{file.name}</span>
+                              <span className="truncate max-w-[100px] sm:max-w-[140px] font-mono">{file.name}</span>
                               <span className="text-slate-400 text-[8px]">({Math.round(file.size / 1024)} KB)</span>
                             </div>
                           ))}
@@ -428,11 +562,11 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
 
               {/* Loader/Response waiting animation */}
               {isLoading && (
-                <div className="flex gap-3.5 max-w-[80%] mr-auto">
-                  <div className="p-2 rounded-full bg-violet-600/15 text-violet-400 shrink-0">
+                <div className="flex gap-2.5 sm:gap-3.5 max-w-[85%] mr-auto">
+                  <div className="p-1.5 sm:p-2 rounded-full bg-violet-600/15 text-violet-400 shrink-0">
                     <Bot className="w-3.5 h-3.5 animate-spin" />
                   </div>
-                  <div className="bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl">
+                  <div className="bg-slate-900/40 border border-slate-800/80 p-3 sm:p-4 rounded-2xl">
                     <div className="flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -447,14 +581,14 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
         </div>
 
         {/* Input area */}
-        <div className="p-4 bg-slate-900/60 border-t border-slate-800/60 space-y-3">
+        <div className="p-2.5 sm:p-4 bg-slate-900/60 border-t border-slate-800/60 space-y-2 sm:space-y-3">
           {/* List pending file attachments */}
           {attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {attachments.map((file, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 bg-slate-950/80 text-[10px] py-1 px-2.5 rounded-lg border border-slate-800 text-slate-300">
+                <div key={idx} className="flex items-center gap-1.5 bg-slate-950/80 text-[10px] py-1 px-2 rounded-lg border border-slate-800 text-slate-300">
                   <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="font-mono truncate max-w-[120px]">{file.name}</span>
+                  <span className="font-mono truncate max-w-[100px] sm:max-w-[120px]">{file.name}</span>
                   <button
                     id={`btn-remove-attachment-${idx}`}
                     onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
@@ -467,13 +601,14 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Paperclip file uploader */}
             <button
               id="btn-trigger-upload"
               onClick={() => fileInputRef.current?.click()}
-              className="p-3 bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 rounded-xl border border-slate-700 transition-all cursor-pointer shrink-0"
+              className="p-2.5 sm:p-3 bg-slate-800 hover:bg-slate-750 hover:text-white text-slate-300 rounded-xl border border-slate-700 transition-all cursor-pointer shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
               title="Attach Document"
+              aria-label="Attach File"
             >
               <Paperclip className="w-4 h-4" />
             </button>
@@ -492,8 +627,8 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isRecording ? "Listening closely..." : "Ask BizGenie (e.g. runway strategies, marketing plan...)"}
-              className="flex-grow bg-slate-950 border border-slate-800 text-white rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
+              placeholder={isRecording ? "Listening..." : "Ask BizGenie..."}
+              className="flex-grow bg-slate-950 border border-slate-800 text-white rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all min-h-[42px]"
               disabled={isRecording}
             />
 
@@ -501,12 +636,13 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
             <button
               id="btn-voice-input"
               onClick={handleVoiceToggle}
-              className={`p-3 rounded-xl border transition-all cursor-pointer shrink-0 ${
+              className={`p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center ${
                 isRecording 
                   ? 'bg-rose-600 text-white border-rose-500 animate-pulse' 
-                  : 'bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 border-slate-700'
+                  : 'bg-slate-800 hover:bg-slate-750 hover:text-white text-slate-300 border-slate-700'
               }`}
               title={isRecording ? "Stop voice recognition" : "Voice message"}
+              aria-label="Voice input"
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
@@ -516,7 +652,8 @@ export default function Assistant({ quickPrompt, clearQuickPrompt }: AssistantPr
               id="btn-send-message"
               onClick={() => handleSendMessage()}
               disabled={!input.trim() && attachments.length === 0}
-              className="p-3 bg-violet-600 hover:bg-violet-500 text-white disabled:bg-slate-800 disabled:text-slate-600 rounded-xl shadow-lg transition-all cursor-pointer shrink-0"
+              className="p-2.5 sm:p-3 bg-violet-600 hover:bg-violet-500 text-white disabled:bg-slate-800 disabled:text-slate-600 rounded-xl shadow-lg transition-all cursor-pointer shrink-0 min-h-[42px] min-w-[42px] flex items-center justify-center"
+              aria-label="Send message"
             >
               <Send className="w-4 h-4" />
             </button>

@@ -31,19 +31,19 @@ const INITIAL_PROFILE: UserProfile = {
 };
 
 const INITIAL_TRANSACTIONS: Transaction[] = [
-  { id: 'tx-1', date: '2026-07-15', description: 'Enterprise Software Consulting', type: 'income', amount: 12500, category: 'Consulting' },
-  { id: 'tx-2', date: '2026-07-18', description: 'AWS Infrastructure Bill', type: 'expense', amount: 1450, category: 'Infrastructure' },
-  { id: 'tx-3', date: '2026-07-19', description: 'SaaS Platform Subscriptions', type: 'income', amount: 4850, category: 'Product Subscriptions' },
-  { id: 'tx-4', date: '2026-07-20', description: 'Office Space Rental', type: 'expense', amount: 2500, category: 'Operations' },
-  { id: 'tx-5', date: '2026-07-20', description: 'Freelance AI Engineer Pay', type: 'expense', amount: 3200, category: 'Contractors' },
-  { id: 'tx-6', date: '2026-07-21', description: 'AI Chatbot Setup Client B', type: 'income', amount: 8900, category: 'Consulting' }
+  { id: 'tx-1', date: '2026-07-15', description: 'Enterprise Software Consulting', type: 'income', amount: 125000, category: 'Consulting' },
+  { id: 'tx-2', date: '2026-07-18', description: 'AWS Infrastructure Bill', type: 'expense', amount: 14500, category: 'Infrastructure' },
+  { id: 'tx-3', date: '2026-07-19', description: 'SaaS Platform Subscriptions', type: 'income', amount: 48500, category: 'Product Subscriptions' },
+  { id: 'tx-4', date: '2026-07-20', description: 'Office Space Rental', type: 'expense', amount: 25000, category: 'Operations' },
+  { id: 'tx-5', date: '2026-07-20', description: 'Freelance AI Engineer Pay', type: 'expense', amount: 32000, category: 'Contractors' },
+  { id: 'tx-6', date: '2026-07-21', description: 'AI Chatbot Setup Client B', type: 'income', amount: 89000, category: 'Consulting' }
 ];
 
 const INITIAL_BUDGETS: Budget[] = [
-  { id: 'b-1', name: 'Software & Cloud Tools', limit: 3000, spent: 1450, category: 'Infrastructure', period: 'monthly' },
-  { id: 'b-2', name: 'Contractor & Freelance', limit: 8000, spent: 3200, category: 'Contractors', period: 'monthly' },
-  { id: 'b-3', name: 'General Marketing', limit: 2500, spent: 1100, category: 'Marketing', period: 'monthly' },
-  { id: 'b-4', name: 'Office & Facilities', limit: 4000, spent: 2500, category: 'Operations', period: 'monthly' }
+  { id: 'b-1', name: 'Software & Cloud Tools', limit: 30000, spent: 14500, category: 'Infrastructure', period: 'monthly' },
+  { id: 'b-2', name: 'Contractor & Freelance', limit: 80000, spent: 32000, category: 'Contractors', period: 'monthly' },
+  { id: 'b-3', name: 'General Marketing', limit: 25000, spent: 11000, category: 'Marketing', period: 'monthly' },
+  { id: 'b-4', name: 'Office & Facilities', limit: 40000, spent: 25000, category: 'Operations', period: 'monthly' }
 ];
 
 const INITIAL_INVOICES: Invoice[] = [
@@ -52,12 +52,12 @@ const INITIAL_INVOICES: Invoice[] = [
     invoiceNo: 'INV-2026-001',
     clientName: 'Nexus Global Inc.',
     clientEmail: 'billing@nexusglobal.com',
-    amount: 12500,
+    amount: 125000,
     issueDate: '2026-07-01',
     dueDate: '2026-07-15',
     status: 'paid',
     items: [
-      { description: 'Phase 1 Delivery: Custom Generative AI Pipeline integration', quantity: 1, unitPrice: 12500, amount: 12500 }
+      { description: 'Phase 1 Delivery: Custom Generative AI Pipeline integration', quantity: 1, unitPrice: 125000, amount: 125000 }
     ]
   },
   {
@@ -65,12 +65,12 @@ const INITIAL_INVOICES: Invoice[] = [
     invoiceNo: 'INV-2026-002',
     clientName: 'Starlight Retail',
     clientEmail: 'finance@starlight.io',
-    amount: 8900,
+    amount: 89000,
     issueDate: '2026-07-10',
     dueDate: '2026-07-24',
     status: 'pending',
     items: [
-      { description: 'Business Automation & Workflow Mapping consulting', quantity: 1, unitPrice: 8900, amount: 8900 }
+      { description: 'Business Automation & Workflow Mapping consulting', quantity: 1, unitPrice: 89000, amount: 89000 }
     ]
   },
   {
@@ -78,33 +78,33 @@ const INITIAL_INVOICES: Invoice[] = [
     invoiceNo: 'INV-2026-003',
     clientName: 'Algonquin Agency',
     clientEmail: 'hello@algonquin.com',
-    amount: 3200,
+    amount: 32000,
     issueDate: '2026-07-05',
     dueDate: '2026-07-20',
     status: 'overdue',
     items: [
-      { description: 'Content Marketing Framework generation (AI powered)', quantity: 1, unitPrice: 3200, amount: 3200 }
+      { description: 'Content Marketing Framework generation (AI powered)', quantity: 1, unitPrice: 32000, amount: 32000 }
     ]
   }
 ];
 
 const INITIAL_CUSTOMERS: Customer[] = [
-  { id: 'c-1', name: 'Marcus Sterling', email: 'marcus@nexusglobal.com', phone: '+1 (555) 234-5678', company: 'Nexus Global Inc.', status: 'customer', notes: 'Key enterprise account. Looking for next-phase contract in Q4.', lastInteraction: '2026-07-15' },
-  { id: 'c-2', name: 'Aaliyah Vance', email: 'aaliyah@starlight.io', phone: '+1 (555) 987-6543', company: 'Starlight Retail', status: 'customer', notes: 'Interested in AI recommendation engine.', lastInteraction: '2026-07-18' },
-  { id: 'c-3', name: 'Robert Chen', email: 'robert.chen@innovate.co', phone: '+1 (555) 345-6789', company: 'Innovate Co', status: 'contacted', notes: 'Shared draft proposal for CRM customization.', lastInteraction: '2026-07-19' },
-  { id: 'c-4', name: 'Elena Rostova', email: 'elena@cyberdefense.net', phone: '+1 (555) 765-4321', company: 'CyberDefense Ltd', status: 'lead', notes: 'Met at AI Summit. High interest in OCR extraction services.', lastInteraction: '2026-07-20' }
+  { id: 'c-1', name: 'Marcus Sterling', email: 'marcus@nexusglobal.com', phone: '+91 98765 43210', company: 'Nexus Global Inc.', status: 'customer', notes: 'Key enterprise account. Looking for next-phase contract in Q4.', lastInteraction: '2026-07-15' },
+  { id: 'c-2', name: 'Aaliyah Vance', email: 'aaliyah@starlight.io', phone: '+91 98123 45678', company: 'Starlight Retail', status: 'customer', notes: 'Interested in AI recommendation engine.', lastInteraction: '2026-07-18' },
+  { id: 'c-3', name: 'Robert Chen', email: 'robert.chen@innovate.co', phone: '+91 99887 76655', company: 'Innovate Co', status: 'contacted', notes: 'Shared draft proposal for CRM customization.', lastInteraction: '2026-07-19' },
+  { id: 'c-4', name: 'Elena Rostova', email: 'elena@cyberdefense.net', phone: '+91 97654 32109', company: 'CyberDefense Ltd', status: 'lead', notes: 'Met at AI Summit. High interest in OCR extraction services.', lastInteraction: '2026-07-20' }
 ];
 
 const INITIAL_ORDERS: Order[] = [
-  { id: 'ord-1', customerId: 'c-1', customerName: 'Marcus Sterling', product: 'AI Integration Contract', amount: 12500, date: '2026-07-01', status: 'completed' },
-  { id: 'ord-2', customerId: 'c-2', customerName: 'Aaliyah Vance', product: 'Workflow Automation Setup', amount: 8900, date: '2026-07-10', status: 'pending' },
-  { id: 'ord-3', customerId: 'c-3', customerName: 'Robert Chen', product: 'SEO Content Campaign Package', amount: 1800, date: '2026-07-19', status: 'pending' }
+  { id: 'ord-1', customerId: 'c-1', customerName: 'Marcus Sterling', product: 'AI Integration Contract', amount: 125000, date: '2026-07-01', status: 'completed' },
+  { id: 'ord-2', customerId: 'c-2', customerName: 'Aaliyah Vance', product: 'Workflow Automation Setup', amount: 89000, date: '2026-07-10', status: 'pending' },
+  { id: 'ord-3', customerId: 'c-3', customerName: 'Robert Chen', product: 'SEO Content Campaign Package', amount: 18000, date: '2026-07-19', status: 'pending' }
 ];
 
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: 'emp-1', name: 'Elena Fisher', role: 'Lead AI Engineer', department: 'Engineering', email: 'elena.f@zenithtech.io', salary: 115000, attendanceRate: 98.2, leaveRemaining: 14, joinDate: '2025-02-15' },
-  { id: 'emp-2', name: 'Devon Carter', role: 'Growth Marketing Manager', department: 'Marketing', email: 'devon@zenithtech.io', salary: 85000, attendanceRate: 95.5, leaveRemaining: 18, joinDate: '2025-06-01' },
-  { id: 'emp-3', name: 'Sophia Lin', role: 'Technical Product Manager', department: 'Product', email: 'sophia@zenithtech.io', salary: 98000, attendanceRate: 97.0, leaveRemaining: 12, joinDate: '2025-09-10' }
+  { id: 'emp-1', name: 'Elena Fisher', role: 'Lead AI Engineer', department: 'Engineering', email: 'elena.f@zenithtech.io', salary: 1450000, attendanceRate: 98.2, leaveRemaining: 14, joinDate: '2025-02-15' },
+  { id: 'emp-2', name: 'Devon Carter', role: 'Growth Marketing Manager', department: 'Marketing', email: 'devon@zenithtech.io', salary: 980000, attendanceRate: 95.5, leaveRemaining: 18, joinDate: '2025-06-01' },
+  { id: 'emp-3', name: 'Sophia Lin', role: 'Technical Product Manager', department: 'Product', email: 'sophia@zenithtech.io', salary: 1120000, attendanceRate: 97.0, leaveRemaining: 12, joinDate: '2025-09-10' }
 ];
 
 const INITIAL_DOCUMENTS: DocumentRecord[] = [
@@ -116,10 +116,10 @@ const INITIAL_DOCUMENTS: DocumentRecord[] = [
     uploadDate: '2026-07-10',
     status: 'completed',
     summary: 'Executive overview of Q2 finances showing total growth of 24% YoY. Key cost drivers include cloud infrastructure (AWS) and contract engineering services. Sales from Consulting are highly lucrative but seasonal.',
-    ocrText: 'Zenith Tech Solutions Q2 2026 Financial Report. Net Operating Revenue: $52,300. Expenses: $22,400. Profit margin 57%. Cloud hosting: $4,200. Salaries and Contractors: $14,000. Operating Reserve: $120,000.',
+    ocrText: 'Zenith Tech Solutions Q2 2026 Financial Report. Net Operating Revenue: ₹5,23,000. Expenses: ₹2,24,000. Profit margin 57%. Cloud hosting: ₹42,000. Salaries and Contractors: ₹1,40,000. Operating Reserve: ₹12,00,000.',
     extractedFields: {
       'Reporting Period': 'Q2 2026',
-      'Net Revenue': '$52,300',
+      'Net Revenue': '₹5,23,000',
       'Operating Margin': '57%',
       'Largest Cost Driver': 'Contractor Salaries'
     }
@@ -131,11 +131,11 @@ const INITIAL_DOCUMENTS: DocumentRecord[] = [
     size: '480 KB',
     uploadDate: '2026-07-15',
     status: 'completed',
-    summary: 'Service level agreement between Zenith Tech Solutions and Nexus Global Inc. Specifies delivery of 1 Custom Generative AI Pipeline, net terms of 14 days, and total compensation of $12,500.',
-    ocrText: 'MASTER SERVICES AGREEMENT: Zenith Tech Solutions agrees to deliver a customized artificial intelligence pipeline to Nexus Global Inc. Deliverables include core prompt infrastructure, model tuning configs, and multi-endpoint orchestration routing. Total contract amount: $12,500 due 14 days from deliverable completion.',
+    summary: 'Service level agreement between Zenith Tech Solutions and Nexus Global Inc. Specifies delivery of 1 Custom Generative AI Pipeline, net terms of 14 days, and total compensation of ₹1,25,000.',
+    ocrText: 'MASTER SERVICES AGREEMENT: Zenith Tech Solutions agrees to deliver a customized artificial intelligence pipeline to Nexus Global Inc. Deliverables include core prompt infrastructure, model tuning configs, and multi-endpoint orchestration routing. Total contract amount: ₹1,25,000 due 14 days from deliverable completion.',
     extractedFields: {
       'Client Name': 'Nexus Global Inc.',
-      'Contract Value': '$12,500',
+      'Contract Value': '₹1,25,000',
       'Payment Terms': 'Net 14',
       'Project Scope': 'Custom Generative AI Pipeline'
     }
@@ -143,8 +143,8 @@ const INITIAL_DOCUMENTS: DocumentRecord[] = [
 ];
 
 const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  { id: 'n-1', title: 'Invoice #INV-2026-003 Overdue', description: 'Algonquin Agency has not paid the outstanding balance of $3,200 (Due July 20).', category: 'finance', priority: 'urgent', timestamp: '2026-07-20T10:00:00Z', read: false },
-  { id: 'n-2', title: 'Software Budget Alert', description: 'Software & Cloud Tools monthly budget has reached 82% of its $3,000 limit.', category: 'finance', priority: 'warning', timestamp: '2026-07-21T08:15:00Z', read: false },
+  { id: 'n-1', title: 'Invoice #INV-2026-003 Overdue', description: 'Algonquin Agency has not paid the outstanding balance of ₹32,000 (Due July 20).', category: 'finance', priority: 'urgent', timestamp: '2026-07-20T10:00:00Z', read: false },
+  { id: 'n-2', title: 'Software Budget Alert', description: 'Software & Cloud Tools monthly budget has reached 82% of its ₹30,000 limit.', category: 'finance', priority: 'warning', timestamp: '2026-07-21T08:15:00Z', read: false },
   { id: 'n-3', title: 'Upcoming Client Sync', description: 'Starlight Retail project kickoff meeting scheduled for today at 3:00 PM.', category: 'general', priority: 'info', timestamp: '2026-07-21T09:00:00Z', read: false },
   { id: 'n-4', title: 'New AI Insights Ready', description: 'Your business health score has improved to 88/100! Tap to view recommendation reports.', category: 'assistant', priority: 'info', timestamp: '2026-07-21T01:30:00Z', read: true }
 ];
@@ -165,7 +165,7 @@ const INITIAL_HEALTH: BusinessHealth = {
     {
       id: 'rec-1',
       title: 'Hedge SaaS Cloud Infrastructure',
-      description: 'Your AWS Infrastructure expenses are rising 12% MoM. Consider setting up AWS Savings Plans or running spot instances for model caching nodes to recoup up to $450/month.',
+      description: 'Your AWS Infrastructure expenses are rising 12% MoM. Consider setting up AWS Savings Plans or running spot instances for model caching nodes to recoup up to ₹4,500/month.',
       priority: 'medium',
       category: 'finance'
     },
@@ -202,9 +202,9 @@ const INITIAL_THREADS: ChatThread[] = [
       { id: 'msg-1', role: 'model', content: `Hello! I am **BizGenie AI**, your intelligent business companion. 🧞‍♂️✨
 
 I've automatically ingested your Zenith Tech Solutions financials and operations. Here is a quick snapshot of what we can tackle:
-1. **Analyze Financial Performance**: Optimize cloud hosting budgets or forecast Q3 consulting revenues.
+1. **Analyze Financial Performance**: Optimize cloud hosting budgets or forecast Q3 consulting revenues in Indian Rupee (₹).
 2. **Draft Marketing Copy**: Generate high-engaging LinkedIn or Instagram posts tailored to your tech solutions.
-3. **Draft Professional Communications**: Auto-write payment reminders for Algonquin Agency or write resumes screenings.
+3. **Draft Professional Communications**: Auto-write payment reminders for Algonquin Agency or screen candidate resumes.
 
 What business priority can I assist you with today?`, timestamp: '2026-07-21T01:30:00Z' }
     ]
@@ -220,14 +220,12 @@ export class BizGenieStore {
 
   private init() {
     if (typeof window !== 'undefined') {
-      const keys = [
-        'profile', 'transactions', 'budgets', 'invoices', 'customers', 
-        'orders', 'employees', 'documents', 'notifications', 'events', 
-        'health', 'threads', 'resumeAnalyses', 'marketingPosts'
-      ];
-      
-      // Seed if not existing
-      if (!localStorage.getItem('bg_profile')) {
+      const versionKey = 'bg_inr_currency_v2';
+      const isUpgraded = localStorage.getItem(versionKey);
+
+      // Seed or upgrade if not updated to INR version
+      if (!isUpgraded || !localStorage.getItem('bg_profile')) {
+        localStorage.setItem(versionKey, 'true');
         localStorage.setItem('bg_profile', JSON.stringify(INITIAL_PROFILE));
         localStorage.setItem('bg_transactions', JSON.stringify(INITIAL_TRANSACTIONS));
         localStorage.setItem('bg_budgets', JSON.stringify(INITIAL_BUDGETS));
@@ -295,7 +293,7 @@ export class BizGenieStore {
             // Trigger critical notification
             this.addNotification({
               title: `Budget Exceeded: ${b.name}`,
-              description: `Expenditures on ${b.name} reached $${newSpent}, exceeding your budget limit of $${b.limit}.`,
+              description: `Expenditures on ${b.name} reached ₹${newSpent.toLocaleString('en-IN')}, exceeding your budget limit of ₹${b.limit.toLocaleString('en-IN')}.`,
               category: 'finance',
               priority: 'urgent'
             });

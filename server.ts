@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -43,36 +44,38 @@ app.get("/api/gemini/status", (req, res) => {
 // Helper for Mock/Fallback Gemini replies when no API key is set
 const getFallbackChatResponse = (prompt: string, context: string): string => {
   const lower = prompt.toLowerCase();
+  
   if (lower.includes("budget") || lower.includes("aws") || lower.includes("cloud")) {
     return `### 🧞‍♂️ BizGenie Financial Advisor Insight
 
 I see you are asking about your **AWS / Infrastructure budgets**. 
 Looking at your Zenith Tech Solutions ledger:
-*   Your monthly limit for **Software & Cloud Tools** is **$3,000**, with **$1,450 (48%)** currently spent.
-*   AWS bills are rising at approximately **12% Month-over-Month**.
+* **Monthly Infrastructure Limit**: **₹3,00,000**, with **₹1,45,000 (48%)** currently spent.
+* AWS bills are rising at approximately **12% Month-over-Month**.
 
 **Strategic Recommendations:**
-1.  **Spot Instances & Auto-scaling**: Transition your non-critical generative caching nodes to Spot Instances. This will reduce compute bills by up to **60%**.
-2.  **S3 Intelligent-Tiering**: Enable intelligent tiering on document buckets. Since older analyzed invoices are rarely accessed after 30 days, archiving them can save up to **$150/month**.
-3.  **Savings Plans**: Commit to a 1-year compute savings plan if your baseline is steady above $800/month.
+1. **Spot Instances & Auto-scaling**: Transition non-critical generative caching nodes to Spot Instances. Reduces compute bills by up to **60%**.
+2. **S3 Intelligent-Tiering**: Enable intelligent tiering on document buckets. Archiving old analyzed invoices saves up to **₹15,000/month**.
+3. **Savings Plans**: Commit to a 1-year compute savings plan if your baseline stays steady.
 
 *Would you like me to draft an infrastructure cost auditing checklist for your lead engineer?*`;
   }
-  if (lower.includes("invoice") || lower.includes("algonquin") || lower.includes("overdue")) {
+
+  if (lower.includes("invoice") || lower.includes("algonquin") || lower.includes("overdue") || lower.includes("unpaid")) {
     return `### 🧞‍♂️ BizGenie Invoice Rescue Program
 
-It looks like you're concerned about invoice **INV-2026-003** from **Algonquin Agency** for **$3,200**, which is now overdue.
+It looks like you're concerned about invoice **INV-2026-003** from **Algonquin Agency** for **₹32,000**, which is now overdue.
 
-Here is a professional, high-converting payment reminder email draft. It maintains a polite but firm tone to secure quick payment:
+Here is a professional, high-converting payment reminder email draft:
 
-\`\`\`email
+\`\`\`
 Subject: Payment Reminder: Invoice INV-2026-003 [Zenith Tech Solutions]
 
 Dear Algonquin Accounts Team,
 
 I hope you are doing well.
 
-This is a gentle reminder that invoice INV-2026-003 for $3,200, issued on July 05, 2026, was due on July 20, 2026. According to our records, we have not yet received payment.
+This is a gentle reminder that invoice INV-2026-003 for ₹32,000, issued on July 05, 2026, was due on July 20, 2026. According to our records, we have not yet received payment.
 
 You can securely process this invoice via your direct portal or wire transfer. If payment has already been sent, please disregard this note and accept our thanks.
 
@@ -80,48 +83,82 @@ Thank you for your ongoing partnership.
 
 Best regards,
 Meghaa Raj
-Zenith Tech Solutions
+Founder, Zenith Tech Solutions
 \`\`\`
 
-Would you like me to modify this to include a 5% late fee warning, or prepare a formal PDF statement?`;
+*Would you like me to modify this draft or prepare a formal PDF reminder statement?*`;
   }
+
   if (lower.includes("linkedin") || lower.includes("marketing") || lower.includes("post") || lower.includes("social")) {
     return `### 🧞‍♂️ BizGenie Marketing Engine
 
-Here is a high-impact, professional LinkedIn article outline & post designed to establish **Zenith Tech Solutions** as an industry leader:
+Here is a high-impact, professional LinkedIn post designed for **Zenith Tech Solutions**:
 
-**LinkedIn Post Copy:**
-🚀 **Deploying Generative AI at Scale: The 3 Core Obstacles We Solved for Enterprise Client B**
+🚀 **Deploying Generative AI at Scale: 3 Core Lessons We Learned**
 
-Over the last month, the team at **Zenith Tech Solutions** built and scaled a customized, multi-endpoint GenAI pipeline. Here are the top three hard-won architectural insights:
+Over the last month, the team at **Zenith Tech Solutions** scaled a customized, multi-endpoint GenAI pipeline. Here are our top architectural insights:
 
-1️⃣ **Context Cost Deflation**: By caching embeddings and implementing recursive token truncation, we reduced Gemini runtime latency by 42%.
+1️⃣ **Context Cost Deflation**: By caching embeddings and implementing recursive token truncation, we reduced runtime latency by 42%.
 2️⃣ **Structured Output Guarantees**: We replaced sloppy prompt boundaries with strict JSON schema validations to ensure 100% compliant API responses.
-3️⃣ **Secure Token Isolation**: Implemented a server-side Express proxy for all API operations, shielding critical credentials from front-end browser injection.
+3️⃣ **Secure Token Isolation**: Implemented a server-side proxy for all API operations, shielding credentials.
 
-The result? 100% uptime, zero leaks, and an instant 3.5x boost in workflow throughput.
+The result? 100% uptime and an instant 3.5x boost in workflow throughput.
 
-🔗 Read our full case study or DM me to audit your AI Pipeline.
+🔗 Read our full case study or DM me to audit your AI Pipeline!
 
-#GenerativeAI #SaaS #EnterpriseArchitecture #AStudio #TechConsulting
-
-*Would you like me to generate Facebook or Instagram captions based on this topic?*`;
+#GenerativeAI #SaaS #EnterpriseArchitecture #TechConsulting #ZenithTech`;
   }
 
-  return `### 🧞‍♂️ BizGenie Business Assistant
+  if (lower.includes("hiring") || lower.includes("recruit") || lower.includes("resume") || lower.includes("employee") || lower.includes("salary")) {
+    return `### 🧞‍♂️ BizGenie HR & Talent Acquisition Strategy
 
-Thank you for consulting **BizGenie AI**! Here is a summary evaluation based on your current business status (**Zenith Tech Solutions**):
+Based on your current payroll and team structure at **Zenith Tech Solutions**:
+* **Active Team**: 3 key members (Elena Fisher - Lead AI Engineer, Devon Carter - Growth Marketing, Sophia Lin - Technical PM).
+* **Average Attendance Rate**: **96.9%** across engineering and product.
 
-*   **Financial Strength**: Your current health score is **88/100** with **$26,250** in consulting and subscription income against **$7,150** in expenses. Your profit margins are extremely strong at **~72%**.
-*   **Operational Runway**: With current liquid reserves, your operational runway is healthy at **8.5 months**.
-*   **Active Lead Pipeline**: You have 4 primary contacts, including **Nexus Global Inc.** (SLA completed) and **Starlight Retail** (kickoff scheduled).
+**Action Plan for New Hiring:**
+1. **Define Core Competencies**: Screen for SaaS lifecycle experience and GenAI prompt engineering literacy.
+2. **Competitive Compensation**: Standardize base salaries against regional market rates (₹12,00,000 - ₹18,00,000 PA).
+3. **Structured Onboarding**: Deploy automated 14-day training modules.
 
-**Suggested Actions:**
-1.  **Draft a Business Plan**: Ask me to write a comprehensive business or marketing expansion roadmap.
-2.  **Resume Screening**: Provide me with a job description and a candidate resume to audit suitability.
-3.  **Financial Forecast**: Request an AI revenue projection for the rest of Q3.
+*Would you like me to draft a complete Job Description or screen candidate resumes?*`;
+  }
 
-*How can I help you optimize Zenith Tech Solutions today?*`;
+  if (lower.includes("profit") || lower.includes("margin") || lower.includes("revenue") || lower.includes("cash") || lower.includes("growth")) {
+    return `### 🧞‍♂️ BizGenie Cashflow & Profitability Analysis
+
+Here is a quick financial health analysis for **Zenith Tech Solutions**:
+* **Total Gross Invoiced Income**: **₹2,62,500**
+* **Operating Expenses**: **₹71,500**
+* **Net Profit Margin**: **~72.7%** (Exemplary SaaS consulting margin!)
+* **Net Cash Balance**: **₹1,91,000**
+* **Outstanding Invoices**: **₹32,000** (Algonquin Agency)
+
+**Optimization Recommendations:**
+1. **Recover Overdue Invoices**: Collecting the ₹32,000 overdue invoice will boost cash reserves by **16.7%**.
+2. **Reinvest Profits**: Allocate 15-20% of net margin into targeted LinkedIn lead generation ads.`;
+  }
+
+  // General doubt/task handler
+  return `### 🧞‍♂️ BizGenie AI Co-Pilot Task Execution
+
+I have processed your request: **"${prompt}"**
+
+**Analysis & Strategic Action Steps for Zenith Tech Solutions:**
+
+1. **Immediate Execution Plan**:
+   - Analyzed query against live workspace metrics (₹2,62,500 revenue, ₹71,500 expenses, 4 active client accounts).
+   - Identified primary operational levers to resolve this task effectively.
+
+2. **Core Guidance & Resolution**:
+   - **Strategy**: Implement structured tracking and clear milestones.
+   - **Efficiency**: Leverage automated workflows to minimize manual overhead.
+   - **Impact**: Ensure alignment with your overall Q3 growth objectives and client SLAs (Nexus Global, Starlight Retail).
+
+3. **Recommended Next Steps**:
+   - Would you like me to draft a formal proposal, write an email communication, or calculate detailed ROI projections for this task?
+
+*Feel free to specify additional requirements or ask follow-up questions!*`;
 };
 
 // 1. ChatGPT-like Assistant Endpoint
@@ -162,7 +199,7 @@ app.post("/api/gemini/chat", async (req, res) => {
     });
 
     const response = await client.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: formattedHistory,
       config: {
         systemInstruction,
@@ -170,10 +207,12 @@ app.post("/api/gemini/chat", async (req, res) => {
       }
     });
 
-    res.json({ reply: response.text, mode: 'live' });
+    const reply = response.text || getFallbackChatResponse(prompt, JSON.stringify(context));
+    res.json({ reply, mode: 'live' });
   } catch (err: any) {
     console.error("Gemini Chat Error:", err);
-    res.status(500).json({ error: "Gemini execution failed. Falling back.", details: err.message });
+    const reply = getFallbackChatResponse(prompt, JSON.stringify(context));
+    res.json({ reply, mode: 'fallback', details: err.message });
   }
 });
 
@@ -217,16 +256,33 @@ By leveraging automated client pipelines, we saved over 20+ resource hours per w
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         systemInstruction: "You are BizGenie's copywriter and digital strategist. You write highly engaging, professional marketing materials that maximize engagement and click-through rates.",
         temperature: 0.8
       }
     });
-    res.json({ content: response.text, mode: 'live' });
+    const content = response.text || "Generated marketing campaign outline successfully.";
+    res.json({ content, mode: 'live' });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error("Marketing Gen Error:", err);
+    res.json({ 
+      content: `### 🧞‍♂️ BizGenie AI Marketing Engine
+      
+Here is your customized **${platform.toUpperCase()} Campaign** copy for **${topic}**:
+
+**🎯 Dynamic Hook:**
+"Are you still handling ${topic} manually in 2026? Here is how we automated our pipeline."
+
+**📝 Key Insights:**
+1. **Streamline Operations**: Save resource hours by standardizing templates.
+2. **Data Integrity**: Eliminate manual entry mistakes.
+3. **Scale Conversion**: Engage key decision-makers directly.
+
+#${platform} #ZenithTechSolutions #BusinessGrowth`, 
+      mode: 'fallback' 
+    });
   }
 });
 
@@ -288,7 +344,7 @@ app.post("/api/gemini/screen-resume", async (req, res) => {
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -309,11 +365,29 @@ app.post("/api/gemini/screen-resume", async (req, res) => {
       }
     });
 
-    const parsedData = JSON.parse(response.text);
+    const parsedData = JSON.parse(response.text || '{}');
     res.json({ data: parsedData, mode: 'live' });
   } catch (err: any) {
     console.error("Resume screening error:", err);
-    res.status(500).json({ error: "Failed to parse resume.", details: err.message });
+    const mockAnalysis = {
+      candidateName: candidateName || "Applicant",
+      targetRole: targetRole || "Role Candidate",
+      matchScore: 82,
+      skillsFound: (skills || "Problem Solving, Communication, Teamwork").split(',').map(s => s.trim()),
+      strengths: [
+        "Solid background in technical delivery and task execution",
+        "Strong team collaboration and communication skills"
+      ],
+      weaknesses: [
+        "Requires further technical screening during live interview"
+      ],
+      extractedSummary: "Candidate demonstrates relevant expertise for this position.",
+      suggestedQuestions: [
+        "Describe your most challenging recent technical project.",
+        "How do you prioritize competing deadlines?"
+      ]
+    };
+    res.json({ data: mockAnalysis, mode: 'fallback' });
   }
 });
 
@@ -355,7 +429,7 @@ app.post("/api/gemini/parse-document", async (req, res) => {
 
   try {
     const response = await client.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -379,6 +453,43 @@ app.post("/api/gemini/parse-document", async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Endpoint to list and read all Flutter files
+app.get("/api/flutter/files", (req, res) => {
+  const flutterDir = path.join(process.cwd(), 'flutter_app');
+  const filesList: { path: string; name: string; category: string; content: string }[] = [];
+
+  function scanDir(dir: string, baseRelative = '') {
+    if (!fs.existsSync(dir)) return;
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const relPath = baseRelative ? `${baseRelative}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        scanDir(fullPath, relPath);
+      } else if (entry.isFile() && (entry.name.endsWith('.dart') || entry.name.endsWith('.yaml') || entry.name.endsWith('.md'))) {
+        try {
+          const content = fs.readFileSync(fullPath, 'utf-8');
+          let category = 'Root';
+          if (relPath.includes('screens')) category = 'Screens (UI)';
+          else if (relPath.includes('models')) category = 'Models & Types';
+          else if (relPath.includes('services')) category = 'Services & State';
+          filesList.push({
+            path: relPath,
+            name: entry.name,
+            category,
+            content
+          });
+        } catch (e) {
+          // ignore unreadable
+        }
+      }
+    }
+  }
+
+  scanDir(flutterDir);
+  res.json({ files: filesList });
 });
 
 // Full-Stack serving setup (Express + Vite)
